@@ -22,8 +22,9 @@ vignettes/*.pdf
 Finished runs*
 
 # tables and figs
-tables
-figs
+tables/*.xlsx
+figs/May1*
+figs/April*
 
 # data
 ReducedSurvey*
