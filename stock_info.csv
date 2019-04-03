@@ -1,0 +1,13 @@
+"name","N_indices","N_index_obs","N_mortality_params","N_growth_params","N_stock_recruit_params","N_recdev_params","N_forecast_params","N_select_params","N_retention_params","N_extra_SD","N_Q_params","N_other_params","N_params_total"
+"Aurora",4,22,0,8,1,97,12,17,13,0,0,0,148
+"Canary",4,28,1,9,1,53,12,89,0,0,0,0,165
+"Chilipepper",5,59,0,5,1,48,12,30,0,0,0,0,96
+"Darkblotched",4,27,1,6,1,143,12,16,14,2,5,0,200
+"Dover",4,28,2,10,1,103,12,51,21,4,2,0,206
+"English",3,19,0,0,1,0,0,0,0,3,0,0,4
+"Petrale",5,65,2,10,2,170,12,48,48,2,6,0,300
+"POP",7,48,1,0,1,81,12,11,5,0,0,0,111
+"Rex",3,19,2,0,2,0,0,0,0,3,0,0,7
+"Sablefish",5,69,2,8,1,162,12,41,7,3,2,0,238
+"Sharpchin",3,19,2,0,2,0,0,0,0,3,0,0,7
+"Yellowtail",2,19,2,0,2,0,0,0,0,2,0,0,6
