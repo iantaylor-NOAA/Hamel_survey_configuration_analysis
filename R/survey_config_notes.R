@@ -13,7 +13,8 @@
 # 8. make table of Pstar_sigma
 # 9. make table of relative spawning biomass
 
-#tasks <- c(2,3,5)
+# remake the three figures that get used
+tasks <- c(2,3,5)
 
 dir <- file.path('C:/Users/Ian.Taylor/Documents/manuscripts/',
                  'Hamel et al 2018 SurveyConfigurationPaper/Finished Runs Renamed')
@@ -25,7 +26,27 @@ if(FALSE){
   #load(file.path(dir, '../Nov2b.Rdata'))
   load(file.path(dir, '../R/Apr23_2018.Rdata'))
   legend.order <- c(1, 2, 5, 6, 3, 4, 7)
+  run.info <- data.frame(run = runs,
+                         run.label = run.labels,
+                         run.num = 1:7,
+                         stringsAsFactors=FALSE)[legend.order,]
+  run.info$col <- col
+  run.info$position <- 1:7
+  (YTcrash <- runs[which(apply(mod.sums[[spec]]$Bratio[,1:7], 2, min) < 0.1)])
+  ## [1] "even"  "pass2"
+  run.info$YTgood <- TRUE
+  run.info$YTgood[run.info$run %in% YTcrash] <- FALSE
+  run.info
+  ##     run  run.label run.num     col position YTgood
+  ## 1  full status-quo       1       1        1   TRUE
+  ## 2  half       half       2 #FF8000        2   TRUE
+  ## 5 pass1      pass1       5 #FFFF33        3   TRUE
+  ## 6 pass2      pass2       6 #33FF00        4  FALSE
+  ## 3  even       even       3 #1AB2FF        5  FALSE
+  ## 4   odd        odd       4 #664CFF        6   TRUE
+  ## 7  none       none       7 #E61A33        7   TRUE
 }
+
 if(FALSE){
   ### alternatively, read lots of model files (slower)
   # master directory
@@ -51,20 +72,7 @@ if(FALSE){
 
   require(dichromat)
   col <- c(1,colorschemes$Categorical.12[seq(2,12,2)])
-  # re-ordering colors to match new ordering of legend
-  col <- col[c(1,2,5,6,3,4,7)]
   legend.order <- c(1, 2, 5, 6, 3, 4, 7)
-  
-  # colors inspired by colorbrewer2.org
-  ## greens <- c("#74c476", "#31a354", "#006d2c")
-  ## blues <- c("#6baed6", "#2171b5")
-  ## orange <- "#d95f02"
-  ## black <- "#000000"
-  ## col <- c(black, greens[3], blues[1:2], greens[1:2], orange)
-  ## legend.order <- c(1, 2, 5, 6, 3, 4, 7)
-  #col <- c('black',rich.colors.short(7)[-1])
-  #col <- rich.colors.short(8)[-1]
-  #col <- rich.colors.short(7)
 
   # get output for each species
   mod.specs <- list()
@@ -178,42 +186,45 @@ for(spec in sort(species.name)[order]){
 
   # add legend in place of English model (excluded from results)
   if(spec == "English"){
-    legend('center', lty=1, col=col[legend.order], legend=run.labels[legend.order],
+    legend('center', lty=1, col=run.info$col, legend=run.info$run.label,
            lwd=3, bty='n', title="Survey configuration")
   }else{
+    good <- 1:7
+    if(spec == "Yellowtail"){
+      # filter to only include models that didn't crash
+      good <- run.info$YTgood
+    }
     print(endyr)
     # make plot of depletion
     SSplotComparisons(mod.sums[[spec]], subplot=4, new=FALSE, add=TRUE,
+                      models = run.info$run.num[good],
                       spacepoints=2050, type='l',
                       legend=FALSE,
-                      #legend=(spec=="Aurora"),
                       endyrvec=endyr,
                       btarg = -1,
                       minbthresh = -1,
                       uncertainty=c(TRUE,rep(FALSE,6)),
                       legendloc='bottomleft', legendncol=1,
-                      #lty=c(1,2,3,1,2,3,1),
                       lty=1,
-                      #lty=c(1,2,1,2,1,2,1), 
-                      #col=rich.colors.short(5)[c(1,2,3,3,4,4,5)],
-                      #col=gray(level=seq(0,.7,length=n)),
-                      col=col,
+                      col= run.info$col[good],
                       lwd=c(4, rep(2, n-1)),
-                      #legendlabels=paste0(run.labels[1:n], " sigma=", round(sigma,2)))
-                      legendlabels=run.labels[1:n])
+                      legendlabels=run.info$run.label[1:n])
 
     
     #rect(2014, 0, 2030, 2, col=grey(.9), border=FALSE)
     abline(v=2014.5, lty=3, col='grey')
     row2013 <- which(mod.sums[[spec]]$Bratio$Yr==2013)
-    for(imodel in 1:7){
-      lines(x=rep(endyr + seq(4,10,length=7)[imodel],2),
+    for(iline in (1:7)[good]){
+      col.i <- run.info$col[iline]
+      imodel <- run.info$run.num[iline]
+      xval <- endyr + seq(4,10,length=7)[iline]
+      lines(x=rep(xval, 2),
             y=c(mod.sums[[spec]]$BratioLower[row2013, imodel],
                 mod.sums[[spec]]$BratioUpper[row2013, imodel]),
-            col=col[imodel], lend=3, lwd=2.1)
-      points(x=endyr + seq(4,10,length=7)[imodel],
+            col=col.i, lend=3, lwd=2.1)
+      points(x=xval,
              y=mod.sums[[spec]]$Bratio[row2013, imodel],
-             col=col[imodel], pch=21, bg='white')
+             col=col.i, pch=21, bg='white')
 
 
       ## points(seq(2018,2024,length=7)[imodel], sigma[imodel],
@@ -241,6 +252,97 @@ mtext(side=2, line=2.3, outer=TRUE,
 dev.off()
  
 }
+
+
+########################################################
+# make plot of recruitment timeseries
+########################################################
+
+if(3 %in% tasks){
+  
+png(file=file.path(dir, "../figs/survey_config_recruitment.png"),
+    width=8, height=10, res=300,units='in')
+# setup multi-panel figure
+par(mfrow=c(4,3), mar=c(.3,.3,.3,.3), oma=c(4,4.3,.1,.1))
+# loop over species
+for(spec in sort(species.name)[order]){
+  cat(spec, "\n")
+  #spec <- species.name[ispec]
+  n <- mod.sums[[spec]]$n
+
+  # empty plot
+  R0 <- mod.sums[[spec]]$recruits[1,1]
+  year1 <- 1995
+  space <- .2*(2013 - year1)
+  plot(0, xlim=c(year1 - space, 2013),
+       ylim=c(0, 4.4*R0),
+       xaxs='i', yaxs='i', type='n',
+       xlab="", ylab="", axes=FALSE)
+
+  if(spec == "English"){
+    legend('center', lty=1, col=run.info$col, legend=run.info$run.label,
+           lwd=3, bty='n', title="Survey configuration")
+  }else{
+    good <- 1:7
+    if(spec == "Yellowtail"){
+      # filter to only include models that didn't crash
+      good <- run.info$YTgood
+    }
+    
+    # make plot of recruitment
+    SSplotComparisons(mod.sums[[spec]], subplot=7, new=FALSE, add=TRUE,
+                      models = run.info$run.num[good],
+                      spacepoints=200, type='l',
+                      legend=FALSE,
+                      endyrvec=2012,
+                      uncertainty=c(TRUE,rep(FALSE,6)),
+                      legendloc='topright',
+                      legendncol=1,
+                      lty=1,
+                      col=run.info$col[good],
+                      lwd=c(4, rep(2, n-1)),
+                      legendlabels=run.labels[good])
+
+    rect(1930, 0, year1, 5*R0, col='white', border=FALSE)
+    abline(v=year1, lty=3, col='grey')
+    for(iline in (1:7)[good]){
+      col.i <- run.info$col[iline]
+      imodel <- run.info$run.num[iline]
+      xval <- (year1 - space + space*(1+1:7)/10)[iline]
+      lines(x=rep(xval,2),
+            y=c(mod.sums[[spec]]$recruitsLower[1, imodel],
+                mod.sums[[spec]]$recruitsUpper[1, imodel]),
+            col=col.i, lend=3, lwd=2.1)
+      points(x=xval,
+             y=mod.sums[[spec]]$recruits[1, imodel],
+             col=col.i, pch=21, bg='white')
+    }
+    spec.legend <- species.legend[which(species.name==spec)]
+    mtext(spec.legend, side=3, line=-1.5)
+    if(par()$mfg[1]==par()$mfg[3]){
+      par(mgp=c(3,.8,0))
+      #axis(1, at=seq(10*ceiling(year1/10), 2010, 10))
+      axis(1, at=seq(5*ceiling(year1/5), 2010, 5))
+      par(mgp=c(3,1,0))
+      axis(1, at=year1 - .5*space, label=expression(italic(R[0])))
+      #axis(1, at=2020, label="Final", tick=FALSE)
+    }
+    if(par()$mfg[2]==1){
+      axis(2, las=1, at=R0*pretty(c(0,4)), labels=pretty(c(0,4)))
+    }
+    #abline(h=R0, lty=3)
+    box()
+  }
+  mtext(side=1, line=2.5, outer=TRUE, "Year")
+  #mtext(side=2, line=2.5, outer=TRUE, "Relative spawning biomass")
+  mtext(side=2, line=2.3, outer=TRUE,
+        expression(paste("Recruitment relative to unfished value in status-quo model:",
+            ~~~(italic(R[t])/italic(R)[0]^{status-quo}))))
+}
+dev.off()
+
+}
+
 
 ########################################################
 # make plot of spawning biomass timeseries
@@ -281,51 +383,54 @@ for(spec in sort(species.name)[order]){
   ## }
   # add legend in place of English model (excluded from results)
   if(spec == "English"){
-    legend('center', lty=1, col=col[legend.order], legend=run.labels[legend.order], lwd=3, bty='n',
-           title="Survey configuration")
+    legend('center', lty=1, col=run.info$col, legend=run.info$run.label,
+           lwd=3, bty='n', title="Survey configuration")
   }else{
+    good <- 1:7
+    if(spec == "Yellowtail"){
+      # filter to only include models that didn't crash
+      good <- run.info$YTgood
+    }
+
     # make plot of depletion
     SSplotComparisons(mod.sums[[spec]], subplot=2, new=FALSE, add=TRUE,
+                      models = run.info$run.num[good],
                       spacepoints=2050, type='l',
-                      #legend=(spec=="Canary"),
                       legend=FALSE,
                       endyrvec=endyr,
                       uncertainty=c(TRUE,rep(FALSE,6)),
                       legendloc='topright', legendncol=1,
-                      #lty=c(1,2,3,1,2,3,1),
                       lty=1,
-                      #lty=c(1,2,1,2,1,2,1), 
-                      #col=rich.colors.short(5)[c(1,2,3,3,4,4,5)],
-                      #col=gray(level=seq(0,.7,length=n)),
-                      col=col,
+                      col= run.info$col[good],
                       lwd=c(4, rep(2, n-1)),
-                      #legendlabels=paste0(run.labels[1:n], " sigma=", round(sigma,2)))
-                      legendlabels=run.labels[1:n])
+                      legendlabels=run.info$run.label[good])
 
     # cover up early years to replace with uncertainty around B0
     rect(1930, 0, 1944, 1.2*par()$usr[4], col='white', border=NA)
     abline(v=1943.5, lty=3, col='grey')
     
     row2013 <- which(mod.sums[[spec]]$SpawnBio$Yr==2013)
-    for(imodel in 1:7){
+    for(iline in (1:7)[good]){
+      col.i <- run.info$col[iline]
+      imodel <- run.info$run.num[iline]
       # lines for final value
-      lines(x=rep(endyr + seq(4,10,length=7)[imodel],2),
+      lines(x=rep(endyr + seq(4,10,length=7)[iline],2),
             y=c(mod.sums[[spec]]$SpawnBioLower[row2013, imodel],
                 mod.sums[[spec]]$SpawnBioUpper[row2013, imodel]),
-            col=col[imodel], lend=3, lwd=2.1)
-      points(x=endyr + seq(4,10,length=7)[imodel],
+            col=col.i, lend=3, lwd=2.1)
+      points(x=endyr + seq(4,10,length=7)[iline],
              y=mod.sums[[spec]]$SpawnBio[row2013, imodel],
-             col=col[imodel], pch=21, bg='white')
+             col=col.i, pch=21, bg='white')
 
 
       # lines for B0
-      lines(x=rep(seq(1935,1941,length=7)[imodel],2),
+      lines(x=rep(seq(1935,1941,length=7)[iline],2),
             y=c(mod.sums[[spec]]$SpawnBioLower[1, imodel],
                 mod.sums[[spec]]$SpawnBioUpper[1, imodel]),
-            col=col[imodel], lend=3, lwd=2.1)
-      points(x=seq(1935,1941,length=7)[imodel],
+            col=col.i, lend=3, lwd=2.1)
+      points(x=seq(1935,1941,length=7)[iline],
              y=mod.sums[[spec]]$SpawnBio[1, imodel],
-             col=col[imodel], pch=21, bg='white')
+             col=col.i, pch=21, bg='white')
 
       ## points(seq(2018,2024,length=7)[imodel], sigma[imodel],
       ##        type='h', lend=3, lwd=3, col=col[imodel])
@@ -487,172 +592,3 @@ if(7 %in% tasks){
   B2013.table2 <- rbind(B2013.table2, new.row)
   write.csv(file=file.path(dir, "../tables/B2013_table.csv"), B2013.table2, row.names=FALSE)
 }
-
-########################################################
-# make plot of recruitment timeseries
-########################################################
-
-if(3 %in% tasks){
-  
-png(file=file.path(dir, "../figs/survey_config_recruitment_4-1-2019.png"),
-    width=8, height=10, res=300,units='in')
-# setup multi-panel figure
-par(mfrow=c(4,3), mar=c(.3,.3,.3,.3), oma=c(4,4.3,.1,.1))
-# loop over species
-for(spec in sort(species.name)[order]){
-  cat(spec, "\n")
-  #spec <- species.name[ispec]
-  n <- mod.sums[[spec]]$n
-
-  # empty plot
-  R0 <- mod.sums[[spec]]$recruits[1,1]
-  year1 <- 1995
-  space <- .2*(2013 - year1)
-  plot(0, xlim=c(year1 - space, 2013),
-       ylim=c(0, 4.4*R0),
-       xaxs='i', yaxs='i', type='n',
-       xlab="", ylab="", axes=FALSE)
-
-  if(spec == "English"){
-    legend('center', lty=1, col=col[legend.order],
-           legend=run.labels[legend.order], lwd=3, bty='n',
-           title="Survey configuration")
-  }else{
-    # make plot of recruitment
-    SSplotComparisons(mod.sums[[spec]], subplot=7, new=FALSE, add=TRUE,
-                      spacepoints=200, type='l',
-                      #legend=(spec=="Canary"),'
-                      legend=FALSE,
-                      endyrvec=2012,
-                      uncertainty=c(TRUE,rep(FALSE,6)),
-                      #legendloc=c(.15,1),
-                      legendloc='topright',
-                      legendncol=1,
-                      #lty=c(1,2,3,1,2,3,1),
-                      lty=1,
-                      #lty=c(1,2,1,2,1,2,1), 
-                      #col=rich.colors.short(5)[c(1,2,3,3,4,4,5)],
-                      #col=gray(level=seq(0,.7,length=n)),
-                      col=col,
-                      lwd=c(4, rep(2, n-1)),
-                      legendlabels=run.labels[1:n])
-
-    rect(1930, 0, year1, 5*R0, col='white', border=FALSE)
-    abline(v=year1, lty=3, col='grey')
-    for(imodel in 1:7){
-      xval <- (year1 - space + space*(1+1:7)/10)[imodel]
-      lines(x=rep(xval,2),
-            y=c(mod.sums[[spec]]$recruitsLower[1, imodel],
-                mod.sums[[spec]]$recruitsUpper[1, imodel]),
-            col=col[imodel], lend=3, lwd=2.1)
-      points(x=xval,
-             y=mod.sums[[spec]]$recruits[1, imodel],
-             col=col[imodel], pch=21, bg='white')
-    }
-    spec.legend <- species.legend[which(species.name==spec)]
-    mtext(spec.legend, side=3, line=-1.5)
-    if(par()$mfg[1]==par()$mfg[3]){
-      par(mgp=c(3,.8,0))
-      #axis(1, at=seq(10*ceiling(year1/10), 2010, 10))
-      axis(1, at=seq(5*ceiling(year1/5), 2010, 5))
-      par(mgp=c(3,1,0))
-      axis(1, at=year1 - .5*space, label=expression(italic(R[0])))
-      #axis(1, at=2020, label="Final", tick=FALSE)
-    }
-    if(par()$mfg[2]==1){
-      axis(2, las=1, at=R0*pretty(c(0,4)), labels=pretty(c(0,4)))
-    }
-    #abline(h=R0, lty=3)
-    box()
-  }
-  mtext(side=1, line=2.5, outer=TRUE, "Year")
-  #mtext(side=2, line=2.5, outer=TRUE, "Relative spawning biomass")
-  mtext(side=2, line=2.3, outer=TRUE,
-        expression(paste("Recruitment relative to unfished value in status-quo model:",
-            ~~~(italic(R[t])/italic(R)[0]^{status-quo}))))
-}
-dev.off()
-
-}
-
-
-
-########################################################
-# make plot of SPR timeseries
-########################################################
-
-if(4 %in% tasks){
-  
-png(file=file.path(dir, "../figs/survey_config_SPR.png"),
-    width=8, height=10, res=300,units='in')
-# setup multi-panel figure
-par(mfrow=c(4,3), mar=c(.3,.3,.3,.3), oma=c(4,4.3,.1,.1))
-# loop over species
-for(spec in sort(species.name)[order]){
-  cat(spec, "\n")
-  #spec <- species.name[ispec]
-  n <- mod.sums[[spec]]$n
-
-  # empty plot
-  year1 <- 1960
-  space <- .2*(2015 - year1)
-  plot(0, xlim=c(year1, 2015),
-       ylim=c(0, 2.0),
-       xaxs='i', yaxs='i', type='n',
-       xlab="", ylab="", axes=FALSE)
-  
-  # make plot of recruitment
-  SSplotComparisons(mod.sums[[spec]], subplot=6, new=FALSE, add=TRUE,
-                    spacepoints=200, type='l',
-                    legend=(spec=="Aurora"),
-                    endyrvec=2012,
-                    uncertainty=c(TRUE,rep(FALSE,6)),
-                    legendloc=c(.15,1), legendncol=1,
-                    #lty=c(1,2,3,1,2,3,1),
-                    lty=1,
-                    #lty=c(1,2,1,2,1,2,1), 
-                    #col=rich.colors.short(5)[c(1,2,3,3,4,4,5)],
-                    #col=gray(level=seq(0,.7,length=n)),
-                    col=col,
-                    lwd=c(4, rep(2, n-1)),
-                    legendlabels=run.labels[1:n])
-
-  rect(1930, 0, year1, 5*R0, col='white', border=FALSE)
-  abline(v=year1, lty=3, col='grey')
-  for(imodel in 1:7){
-    xval <- (year1 - space + space*(1+1:7)/10)[imodel]
-    lines(x=rep(xval,2),
-          y=c(mod.sums[[spec]]$recruitsLower[1, imodel],
-              mod.sums[[spec]]$recruitsUpper[1, imodel]),
-          col=col[imodel], lend=3, lwd=2.1)
-    points(x=xval,
-           y=mod.sums[[spec]]$recruits[1, imodel],
-           col=col[imodel], pch=21, bg='white')
-  }
-  spec.legend <- species.legend[which(species.name==spec)]
-  mtext(spec.legend, side=3, line=-1.5)
-  if(par()$mfg[1]==par()$mfg[3]){
-    par(mgp=c(3,.8,0))
-    axis(1, at=seq(10*ceiling(year1/10), 2010, 10))
-    par(mgp=c(3,1,0))
-    axis(1, at=year1 - .5*space, label=expression(italic(R[0])))
-    #axis(1, at=2020, label="Final", tick=FALSE)
-  }
-  if(par()$mfg[2]==1){
-    axis(2, las=1, at=R0*pretty(c(0,3)), labels=pretty(c(0,3)))
-  }
-  #abline(h=R0, lty=3)
-  box()
-}
-mtext(side=1, line=2.5, outer=TRUE, "Year")
-#mtext(side=2, line=2.5, outer=TRUE, "Relative spawning biomass")
-mtext(side=2, line=2.3, outer=TRUE,
-      expression(paste("Spawning Potential Ratio (SPR)", ~~~(italic(SPR)))))
-dev.off()
-
-}
-
-if(10 %in% tasks){
-
-}
-
