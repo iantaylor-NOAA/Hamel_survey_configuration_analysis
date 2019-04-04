@@ -14,7 +14,11 @@
 # 9. make table of relative spawning biomass
 
 # remake the three figures that get used
-tasks <- c(2,3,5)
+#tasks <- c(2,3,5)
+
+# remake the OFL table
+tasks <- 6
+
 
 dir <- file.path('C:/Users/Ian.Taylor/Documents/manuscripts/',
                  'Hamel et al 2018 SurveyConfigurationPaper/Finished Runs Renamed')
@@ -22,29 +26,7 @@ dir <- file.path('C:/Users/Ian.Taylor/Documents/manuscripts/',
 require(r4ss)
 if(FALSE){
   ### read all info from Rdata file
-  # master directory
-  #load(file.path(dir, '../Nov2b.Rdata'))
-  load(file.path(dir, '../R/Apr23_2018.Rdata'))
-  legend.order <- c(1, 2, 5, 6, 3, 4, 7)
-  run.info <- data.frame(run = runs,
-                         run.label = run.labels,
-                         run.num = 1:7,
-                         stringsAsFactors=FALSE)[legend.order,]
-  run.info$col <- col
-  run.info$position <- 1:7
-  (YTcrash <- runs[which(apply(mod.sums[[spec]]$Bratio[,1:7], 2, min) < 0.1)])
-  ## [1] "even"  "pass2"
-  run.info$YTgood <- TRUE
-  run.info$YTgood[run.info$run %in% YTcrash] <- FALSE
-  run.info
-  ##     run  run.label run.num     col position YTgood
-  ## 1  full status-quo       1       1        1   TRUE
-  ## 2  half       half       2 #FF8000        2   TRUE
-  ## 5 pass1      pass1       5 #FFFF33        3   TRUE
-  ## 6 pass2      pass2       6 #33FF00        4  FALSE
-  ## 3  even       even       3 #1AB2FF        5  FALSE
-  ## 4   odd        odd       4 #664CFF        6   TRUE
-  ## 7  none       none       7 #E61A33        7   TRUE
+  load(file.path(dir, '../R/Apr04_2019.Rdata'))
 }
 
 if(FALSE){
@@ -70,10 +52,6 @@ if(FALSE){
   # group full assessments alphabetically ahead of DM assessments
   order <- c(1:5, 7:8, 10, 6, 9, 11:12)
 
-  require(dichromat)
-  col <- c(1,colorschemes$Categorical.12[seq(2,12,2)])
-  legend.order <- c(1, 2, 5, 6, 3, 4, 7)
-
   # get output for each species
   mod.specs <- list()
   for(ispec in 1:length(species)){
@@ -91,11 +69,39 @@ if(FALSE){
     cat("##########\n", spec, "\n\n")
     mod.sums[[spec]] <- SSsummarize(mod.specs[[ispec]][!is.na(mod.specs[[ispec]])])
   }
-  #save.image(file.path(dir, '../R/Apr13_2018.Rdata'))
 
   # re-read petrale
   mod.specs[["Petrale"]][[1]] <- SS_output(file.path(dir,'Petrale/full'))
-  save.image(file.path(dir, '../R/Apr23_2018.Rdata'))
+
+  # table of info for each run, line, model, etc.
+  run.info <- data.frame(run = runs,
+                         run.label = run.labels,
+                         run.num = 1:7,
+                         stringsAsFactors=FALSE)[legend.order,]
+
+  # add color to table
+  require(dichromat)
+  col <- c(1,colorschemes$Categorical.12[seq(2,12,2)])
+  legend.order <- c(1, 2, 5, 6, 3, 4, 7)
+
+  run.info$col <- col
+  run.info$position <- 1:7
+  (YTcrash <- runs[which(apply(mod.sums[[spec]]$Bratio[,1:7], 2, min) < 0.1)])
+  ## [1] "even"  "pass2"
+  run.info$YTgood <- TRUE
+  run.info$YTgood[run.info$run %in% YTcrash] <- FALSE
+  run.info
+##     run  run.label run.num     col position YTgood
+## 1  full status-quo       1       1        1   TRUE
+## 2  half       half       2 #FF8000        2   TRUE
+## 5 pass1      pass1       5 #FFFF33        3   TRUE
+## 6 pass2      pass2       6 #33FF00        4  FALSE
+## 3  even       even       3 #1AB2FF        5  FALSE
+## 4   odd        odd       4 #664CFF        6   TRUE
+## 7  none  no-WCGBTS       7 #E61A33        7   TRUE
+
+  # save results
+  save.image(file.path(dir, '../R/Apr04_2019.Rdata'))
 }
 ########################################################
 # details on each stock
