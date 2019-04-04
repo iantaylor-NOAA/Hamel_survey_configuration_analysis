@@ -1,0 +1,7 @@
+#V3.24j-64bit
+SS-V3.24j-64bit-safe;_11/14/2012;_Stock_Synthesis_by_Richard_Methot_(NOAA)_using_ADMB_11.0
+start_time: Thu Nov 03 21:21:32 2016
+
+7 696
+active-i active-j all-i all-j Par?-i Par?-j label-i label-j corr
+Variances are 0.0 for first two elements, so do not write 
