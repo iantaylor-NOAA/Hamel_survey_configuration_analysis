@@ -19,7 +19,10 @@ vignettes/*.pdf
 *.docx
 
 # model runs
-Finished runs*
+/Finished runs/
+# plots from run
+**/plots/**
+*rerun*
 
 # tables and figs
 tables/*.xlsx
@@ -38,3 +41,46 @@ old
 
 # .RData files
 *.Rdata
+
+# unneeded SS/ADMB files
+*.p0*
+*.b0*
+*.r0*
+*.std
+*.htp
+*.eva
+*.tds
+*.bar
+*.cov
+*.dep
+*.hes
+*.rpt
+*.cpp
+*.log
+*.obj
+*.tmp
+*.ecm
+*.mc2
+*.mcm
+*.hst
+*.psv
+*.ss_new
+gradient.1
+gradient.2
+gradient.3
+gradient.4
+gradient.5
+gradient.dat
+rebuild.sso
+echoinput.sso
+SIS_table.sso
+runnumber.ss
+tmp_admb
+variance
+CumReport.sso
+ParmTrace.sso
+ss.cor
+ss.rep
+ss.par
+*.exe
+*.bat
