@@ -1,8 +1,0 @@
-SS-V3.24j-64bit-safe;_11/14/2012;_Stock_Synthesis_by_Richard_Methot_(NOAA)_using_ADMB_11.0
-Thu Jul 07 14:54:39 2016
-
-Input catches in 2013 can be overridden by caps or allocations
-Input catches in 2014 can be overridden by caps or allocations
-Final gradient: 0.000703798 is larger than final_conv: 0.0001
- N warnings: 3
-Number_of_active_parameters_on_or_near_bounds: 3
