@@ -14,28 +14,30 @@
 # 9. make table of relative spawning biomass
 
 # remake the three figures that get used
-#tasks <- c(2,3,5)
+tasks <- c(2,3,5)
+#tasks <- 3
 
 # remake the OFL table
-tasks <- 6
+#tasks <- 6
 
 
 dir <- file.path('C:/Users/Ian.Taylor/Documents/manuscripts/',
-                 'Hamel et al 2018 SurveyConfigurationPaper/Finished Runs Renamed')
+                 'Hamel et al 2018 SurveyConfigurationPaper/')
 
 require(r4ss)
-if(FALSE){
+source(file.path(dir, 'R/color_settings.R'))
+
+if(!exists("species.name")){
   ### read all info from Rdata file
-  load(file.path(dir, '../R/Apr04_2019.Rdata'))
+  load(file.path(dir, 'R/Apr04_2019.Rdata'))
 }
 
 if(FALSE){
   ### alternatively, read lots of model files (slower)
-  # master directory
-  dir <- file.path('C:/Users/Ian.Taylor/Documents/manuscripts/',
-                   'Hamel et al 2018 SurveyConfigurationPaper/Finished Runs Renamed')
+  # master directory for model results
+  dir.runs <- file.path(dir, 'Finished Runs Renamed')
   # sub-directories for each species
-  species <- dir(dir)
+  species <- dir(dir.runs)
   species.name <- species
   species.legend <- species
   species.legend[c(1:4,11:12)] <- paste(species[c(1:4,11:12)], "rockfish")
@@ -57,7 +59,7 @@ if(FALSE){
   for(ispec in 1:length(species)){
     spec <- species[ispec]
     cat("##########\n", spec, "\n\n")
-    mod.specs[[spec]] <- SSgetoutput(dirvec=file.path(dir, spec, runs),
+    mod.specs[[spec]] <- SSgetoutput(dirvec=file.path(dir.runs, spec, runs),
                                      getcovar=FALSE, getcomp=FALSE,
                                      forecast=(spec!="Yellowtail"))
   }
@@ -71,7 +73,7 @@ if(FALSE){
   }
 
   # re-read petrale
-  mod.specs[["Petrale"]][[1]] <- SS_output(file.path(dir,'Petrale/full'))
+  mod.specs[["Petrale"]][[1]] <- SS_output(file.path(dir.runs,'Petrale/full'))
 
   # table of info for each run, line, model, etc.
   run.info <- data.frame(run = runs,
@@ -80,8 +82,6 @@ if(FALSE){
                          stringsAsFactors=FALSE)[legend.order,]
 
   # add color to table
-  require(dichromat)
-  col <- c(1,colorschemes$Categorical.12[seq(2,12,2)])
   legend.order <- c(1, 2, 5, 6, 3, 4, 7)
 
   run.info$col <- col
@@ -101,11 +101,24 @@ if(FALSE){
 ## 7  none  no-WCGBTS       7 #E61A33        7   TRUE
 
   # save results
-  save.image(file.path(dir, '../R/Apr04_2019.Rdata'))
+  save.image(file.path(dir.runs, '../R/Apr04_2019.Rdata'))
 }
 ########################################################
 # details on each stock
 ########################################################
+
+# update color 10 Feb 2020
+run.info$col <- col
+run.info
+##     run  run.label run.num     col position YTgood
+## 1  full status-quo       1       1        1   TRUE
+## 2  half       half       2 #FF8000        2   TRUE
+## 5 pass1      pass1       5 #FFFF33        3   TRUE
+## 6 pass2      pass2       6 #33FF00        4  FALSE
+## 3  even       even       3 #1AB2FF        5  FALSE
+## 4   odd        odd       4 #664CFF        6   TRUE
+## 7  none  no-WCGBTS       7 #E61A33        7   TRUE
+
 
 if(1 %in% tasks){
 stock.info <- data.frame(name = species,
@@ -162,7 +175,7 @@ for(spec in sort(species.name)){
 }
 
 stock.info$N_other_params <- stock.info$N_params_total - apply(stock.info[,4:12], 1, sum)
-write.csv(file=file.path(dir, "../stock_info.csv"), stock.info, row.names=FALSE)
+write.csv(file=file.path(dir, "stock_info.csv"), stock.info, row.names=FALSE)
 }
 
 ########################################################
@@ -171,7 +184,7 @@ write.csv(file=file.path(dir, "../stock_info.csv"), stock.info, row.names=FALSE)
 if(2 %in% tasks){
 
 endyr <- 2013
-png(file=file.path(dir, paste0("../figs/survey_config_relative_SSB_end",endyr,".png")),
+png(file=file.path(dir, "figs/Fig4_survey_config_relative_SSB.png"),
     width=8, height=10, res=300,units='in')
 # setup multi-panel figure
 par(mfrow=c(4,3), mar=c(.3,.3,.3,.3), oma=c(4,4.3,.1,.1))
@@ -266,7 +279,7 @@ dev.off()
 
 if(3 %in% tasks){
   
-png(file=file.path(dir, "../figs/survey_config_recruitment.png"),
+png(file=file.path(dir, "figs/Fig5_survey_config_recruitment.png"),
     width=8, height=10, res=300,units='in')
 # setup multi-panel figure
 par(mfrow=c(4,3), mar=c(.3,.3,.3,.3), oma=c(4,4.3,.1,.1))
@@ -296,7 +309,7 @@ for(spec in sort(species.name)[order]){
     }
     
     # make plot of recruitment
-    SSplotComparisons(mod.sums[[spec]], subplot=7, new=FALSE, add=TRUE,
+    SSplotComparisons(mod.sums[[spec]], subplot=9, new=FALSE, add=TRUE,
                       models = run.info$run.num[good],
                       spacepoints=200, type='l',
                       legend=FALSE,
@@ -357,7 +370,7 @@ dev.off()
 if(5 %in% tasks){
 
 endyr <- endyr
-png(file=file.path(dir, paste0("../figs/survey_config_SSB_end",endyr,".png")),
+png(file=file.path(dir, "figs/Fig3_survey_config_SSB.png"),
     width=8, height=10, res=300,units='in')
 # setup multi-panel figure
 par(mfrow=c(4,3), mar=c(.3,.3,.3,.3), oma=c(4,4.3,.1,.1))
@@ -500,7 +513,7 @@ if(6 %in% tasks){
   }
   new.row[,1+1] <- NA
   OFL.table2 <- rbind(OFL.table2, new.row)
-  write.csv(file=file.path(dir, "../tables/OFL2015_table.csv"), OFL.table2, row.names=FALSE)
+  write.csv(file=file.path(dir, "tables/OFL2015_table.csv"), OFL.table2, row.names=FALSE)
 }
 
 if(8 %in% tasks){
@@ -527,7 +540,7 @@ if(8 %in% tasks){
   sig.table$category[sig.table$name %in% cat2species] <- 2
   sig.table$default.sigma[sig.table$name %in% cat2species] <- 0.72
 
-  write.csv(file=file.path(dir, "../tables/sig_table.csv"), sig.table, row.names=FALSE)
+  write.csv(file=file.path(dir, "tables/sig_table.csv"), sig.table, row.names=FALSE)
 
   buffer.table <- sig.table
   for(irow in 1:nrow(buffer.table)){
@@ -537,7 +550,7 @@ if(8 %in% tasks){
         round(qlnorm(0.45, 0, sdlog=max(default, sig.table[irow,icol])), 3)
     }
   }
-  write.csv(file=file.path(dir, "../tables/buffer_table.csv"), buffer.table, row.names=FALSE)
+  write.csv(file=file.path(dir, "tables/buffer_table.csv"), buffer.table, row.names=FALSE)
 
 }
 
@@ -560,7 +573,7 @@ if(9 %in% tasks){
     }
   }
   
-  write.csv(file=file.path(dir, "../tables/relbio_table.csv"), relbio.table, row.names=FALSE)
+  write.csv(file=file.path(dir, "tables/relbio_table.csv"), relbio.table, row.names=FALSE)
 }
 
 if(7 %in% tasks){
@@ -596,5 +609,5 @@ if(7 %in% tasks){
   }
   new.row[,1+1] <- NA
   B2013.table2 <- rbind(B2013.table2, new.row)
-  write.csv(file=file.path(dir, "../tables/B2013_table.csv"), B2013.table2, row.names=FALSE)
+  write.csv(file=file.path(dir, "tables/B2013_table.csv"), B2013.table2, row.names=FALSE)
 }

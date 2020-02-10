@@ -20,8 +20,8 @@ text(x=2001.7, y=2.5, labels="Vessel", font=2)
 text(x=2001.7, y=seq(3,17,1)+0.5, labels=c("A","B"), font=1)
 
 # add color blocks
-require(dichromat)
-col <- c(1,colorschemes$Categorical.12[seq(2,12,2)])
+source(file.path(dir, 'R/color_settings.R'))
+
 for(i in 1:7){
   yvec <- 2*i + c(3,1)
   rect(xleft  = 1999,   ybottom =yvec[1],

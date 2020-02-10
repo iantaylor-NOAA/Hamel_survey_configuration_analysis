@@ -103,9 +103,8 @@ for(spec in sort(species)[order]){
          ylim=c(0, ymax),
          xaxs='i', yaxs='i', type='n',
          xlab="", ylab="", axes=FALSE)
-    #col <- c('black',rich.colors.short(7)[-1])
-    require(dichromat)
-    col <- c(1,colorschemes$Categorical.12[seq(2,12,2)])
+    # get vector of colors
+    source(file.path(dir, 'R/color_settings.R'))
 
     # values for legend
     runs <- c("status-quo", "half", "pass1", "pass2", "even", "odd", "none")
