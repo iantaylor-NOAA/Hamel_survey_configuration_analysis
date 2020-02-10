@@ -20,6 +20,7 @@ vignettes/*.pdf
 
 # model runs
 /Finished runs/
+/Finished runs renamed/
 # plots from run
 **/plots/**
 *rerun*
