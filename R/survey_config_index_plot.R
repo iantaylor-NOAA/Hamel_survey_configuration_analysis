@@ -55,7 +55,7 @@ filenames <- paste0("Index_estimates_",
 filenames %in% dir(dir.index)
 ## [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
 
-png(file=file.path(dir, "figs/indices2.png"),
+png(file=file.path(dir, "figs/Fig2_indices.png"),
     width=8, height=10, res=300,units='in')
 # setup multi-panel figure
 par(mfrow=c(4,3), mar=c(.3,2,.3,.3), oma=c(4,2.3,.1,.1))

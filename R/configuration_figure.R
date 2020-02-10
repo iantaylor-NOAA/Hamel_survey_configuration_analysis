@@ -5,7 +5,7 @@ pass <- rep(1:2, 10)
 
 dir <- file.path('C:/Users/Ian.Taylor/Documents/manuscripts/',
                  'Hamel et al 2018 SurveyConfigurationPaper/')
-png(file=file.path(dir, "figs/configuration.png"),
+png(file=file.path(dir, "figs/Fig1_configuration.png"),
     width=9, height=4.5, res=300,units='in')
 
 par(mar=rep(0.5,4))
